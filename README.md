@@ -72,7 +72,6 @@ GET https://your-app-url.com/recommend?query=software+developer&top_k=5
             "Adaptive/IRT": "n",
             "Duration": "45 minutes"
         },
-        ...
     ]
 }
 ```

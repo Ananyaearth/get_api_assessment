@@ -117,8 +117,3 @@ The **SHL Assessment Recommendation API** provides an efficient way to recommend
 4. Access the API at `http://127.0.0.1:8000` and make requests to the `/recommend` endpoint.
 
 ---
-
-You can add this markdown to your `README.md` file in your GitHub repository. This will provide an informative and structured report for anyone visiting your repository.
-```
-
-You can copy and paste this into your `README.md` file in your GitHub repository. Let me know if you need any further edits or adjustments!

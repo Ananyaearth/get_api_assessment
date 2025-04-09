@@ -47,9 +47,11 @@ def recommend(request: dict = Body(...)):
         duration = int(''.join(filter(str.isdigit, str(duration_str)))) if duration_str else 0
         adaptive = "Yes" if row['Adaptive/IRT (y/n)'].lower() == 'y' else "No"
         remote = "Yes" if row['Remote Testing (y/n)'].lower() == 'y' else "No"
-        test_type_codes = row['Test Type'].split()
+        # Ensure Test Type is split correctly
+        test_type_raw = str(row['Test Type']).strip()
+        test_type_codes = test_type_raw.split()
         test_type = [TEST_TYPE_MAPPING[code] for code in test_type_codes if code in TEST_TYPE_MAPPING]
-
+        
         results.append({
             "url": row['URL'],
             "adaptive_support": adaptive,

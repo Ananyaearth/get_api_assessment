@@ -24,7 +24,7 @@ TEST_TYPE_MAPPING = {
 try:
     df = pd.read_csv("shl_catalog_detailed.csv")
     index = faiss.read_index("shl_assessments_index.faiss")
-    model = SentenceTransformer('model_cache') if os.path.exists('model_cache') else SentenceTransformer('all-MiniLM-L6-v2')
+    model = SentenceTransformer('all-MiniLM-L6-v2')
 except Exception as e:
     raise Exception(f"Failed to load: {e}")
 

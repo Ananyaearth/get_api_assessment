@@ -9,14 +9,14 @@ import os
 app = FastAPI(title="SHL Assessment Recommendation API")
 
 # Test Type mapping
-TEST_TYPE_MAPPING = {
+test_type_map = {
     'A': 'Ability & Aptitude',
     'B': 'Biodata & Situational Judgement',
     'C': 'Competencies',
     'D': 'Development & 360',
     'E': 'Assessment Exercises',
     'K': 'Knowledge & Skills',
-    'P': 'Personality & Behavior',
+    'P': 'Personality & Behaviour',
     'S': 'Simulations'
 }
 
@@ -36,7 +36,7 @@ def health_check():
 # POST endpoint with original logic adapted to spec
 @app.post("/recommend")
 def recommend(request: dict = Body(...)):
-    top_k = max(1, min(10, request.get("top_k", 5)))
+    top_k = max(1, min(10, request.get("top_k", 5)))  # Variable top_k, default 5, range 1-10
     query_embedding = model.encode([request["query"]])[0].astype("float32")
     distances, indices = index.search(np.array([query_embedding]), top_k)
 
@@ -47,11 +47,11 @@ def recommend(request: dict = Body(...)):
         duration = int(''.join(filter(str.isdigit, str(duration_str)))) if duration_str else 0
         adaptive = "Yes" if row['Adaptive/IRT (y/n)'].lower() == 'y' else "No"
         remote = "Yes" if row['Remote Testing (y/n)'].lower() == 'y' else "No"
-        # Ensure Test Type is split correctly
-        test_type_raw = str(row['Test Type']).strip()
-        test_type_codes = test_type_raw.split()
-        test_type = [TEST_TYPE_MAPPING[code] for code in test_type_codes if code in TEST_TYPE_MAPPING]
         
+        # Use suggested logic for test_type
+        test_types = str(row['Test Type'])  # Ensure it’s a string
+        test_type = [test_type_map.get(abbrev.strip(), abbrev.strip()) for abbrev in test_types.split()]
+
         results.append({
             "url": row['URL'],
             "adaptive_support": adaptive,

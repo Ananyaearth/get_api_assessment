@@ -2,8 +2,7 @@ import pandas as pd
 import numpy as np
 import faiss
 from sentence_transformers import SentenceTransformer
-from fastapi import FastAPI, Query
-from typing import Optional
+from fastapi import FastAPI, Body
 
 # Initialize FastAPI app
 app = FastAPI(title="SHL Assessment Recommendation API")
@@ -16,22 +15,43 @@ try:
 except Exception as e:
     raise Exception(f"Failed to load: {e}")
 
-# GET endpoint
-@app.get("/recommend")
-def recommend(query: str = Query(..., description="Job description or keyword"),
-              top_k: int = Query(5, description="Number of recommendations", ge=1, le=10)):
-    query_embedding = model.encode([query])[0].astype("float32")
+# Health Check Endpoint
+@app.get("/health")
+def health_check():
+    return {"status": "healthy"}
+
+# POST endpoint with original logic adapted to spec, no pydantic
+@app.post("/recommend")
+def recommend(request: dict = Body(...)):
+    # Ensure top_k is within spec range (1-10)
+    top_k = max(1, min(10, request.get("top_k", 5)))  # Default to 5 if not provided
+    
+    query_embedding = model.encode([request["query"]])[0].astype("float32")
     distances, indices = index.search(np.array([query_embedding]), top_k)
 
     results = []
     for idx in indices[0]:
         row = df.iloc[idx]
+        
+        # Convert duration to integer as required by spec
+        duration_str = row['Assessment Length']
+        duration = int(''.join(filter(str.isdigit, str(duration_str)))) if duration_str else 0
+
+        # Convert y/n to Yes/No as required by spec
+        adaptive = "Yes" if row['Adaptive/IRT (y/n)'].lower() == 'y' else "No"
+        remote = "Yes" if row['Remote Testing (y/n)'].lower() == 'y' else "No"
+
+        # Add test_type as required by spec (default value)
+        test_type = ["Knowledge & Skills"]
+
+        # Map original fields to required spec fields
         results.append({
-            "Assessment Name": row['Individual Test Solutions'],
-            "URL": row['URL'],
-            "Remote Testing": row['Remote Testing (y/n)'],
-            "Adaptive/IRT": row['Adaptive/IRT (y/n)'],
-            "Duration": row['Assessment Length']
+            "url": row['URL'],
+            "adaptive_support": adaptive,
+            "description": row['Individual Test Solutions'],
+            "duration": duration,
+            "remote_support": remote,
+            "test_type": test_type
         })
 
-    return {"results": results}
+    return {"recommended_assessments": results}
